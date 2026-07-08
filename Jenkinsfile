@@ -43,22 +43,5 @@ pipeline {
         }
     }
     
-    post {
-        always {
-            echo "========== Pipeline Execution Summary =========="
-            echo "Job: ${JOB_NAME}"
-            echo "Build: ${BUILD_NUMBER}"
-            echo "Status: ${BUILD_STATUS}"
-        }
-        success {
-            echo "✓✓✓ Pipeline executed successfully! ✓✓✓"
-            echo "Docker Image: ${FULL_IMAGE_NAME}"
-            echo "Registry: ${REGISTRY}"
-        }
-        failure {
-            echo "✗✗✗ Pipeline failed! ✗✗✗"
-            echo "Check logs above for errors"
-        }
-    }
 }
 
