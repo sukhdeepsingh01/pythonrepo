@@ -1,0 +1,59 @@
+trigger:
+  - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  PACKAGE_NAME: 'my_package'
+  PYTHON: 'python3'
+  VENV_DIR: 'venv'
+
+stages:
+  - stage: Build
+    jobs:
+      - job: BuildPackage
+        steps:
+          - checkout: self
+
+          - script: |
+              echo '📥 Checking out source code...'
+            displayName: 'Checkout'
+
+          - script: |
+              echo '🐍 Creating virtual environment...'
+              $(PYTHON) -m venv $(VENV_DIR)
+              . $(VENV_DIR)/bin/activate
+              pip install --upgrade pip
+              pip install -r requirements.txt
+            displayName: 'Setup Python Environment'
+
+          - script: |
+              echo '📦 Building wheel package...'
+              . $(VENV_DIR)/bin/activate
+              python -m build
+            displayName: 'Build WHL Package'
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: 'dist'
+              ArtifactName: 'wheel-package'
+              publishLocation: 'Container'
+            displayName: 'Archive Artifacts'
+            condition: succeededOrFailed()
+
+          - script: |
+              echo '✅ Pipeline completed successfully!'
+            displayName: 'Success Message'
+            condition: succeeded()
+
+          - script: |
+              echo '❌ Pipeline failed. Check logs above.'
+            displayName: 'Failure Message'
+            condition: failed()
+
+          - script: |
+              echo '🧹 Cleaning up workspace...'
+              rm -rf $(VENV_DIR)
+            displayName: 'Cleanup'
+            condition: always()
